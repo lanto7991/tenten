@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App de Repartidor</title>
+    <!-- Incluye Tailwind CSS para un diseño moderno y responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Incluye Font Awesome para los íconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilos para la caja de mensajes de notificación */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .message-box.success {
+            background-color: #28a745;
+        }
+        .message-box.error {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <!-- Mensajes de Notificación -->
+    <div id="message-box" class="message-box"></div>
+
+    <div class="bg-white shadow-xl rounded-2xl w-full max-w-md p-6 m-4 space-y-6">
+
+        <!-- Pantalla de Login -->
+        <div id="login-screen" class="space-y-4">
+            <h1 class="text-3xl font-bold text-center text-gray-800">Bienvenido</h1>
+            <p class="text-center text-gray-600">Ingresa con tus credenciales.</p>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="nombre_usuario" class="sr-only">Usuario</label>
+                    <input type="text" id="nombre_usuario" name="nombre_usuario" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200" placeholder="Nombre de usuario" required>
+                </div>
+                <div>
+                    <label for="password" class="sr-only">Contraseña</label>
+                    <input type="password" id="password" name="password" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200" placeholder="Contraseña" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-blue-700 transition duration-200">
+                    Ingresar
+                </button>
+            </form>
+        </div>
+
+        <!-- Pantalla Principal de Pedidos -->
+        <div id="main-app" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold text-gray-800">Mis Pedidos</h1>
+                <button id="logout-button" class="text-sm text-gray-500 hover:text-gray-700">Salir</button>
+            </div>
+            
+            <div id="pedidos-list" class="space-y-4">
+                <!-- Los pedidos se cargarán aquí dinámicamente -->
+            </div>
+
+            <div id="loading-indicator" class="hidden text-center text-gray-500 mt-8">
+                <i class="fa-solid fa-spinner fa-spin-pulse text-4xl"></i>
+                <p class="mt-2">Cargando pedidos...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // URL de tu API. Asegúrate de que esta URL sea accesible.
+        const API_URL = 'api.php';
+
+        // Elementos del DOM
+        const loginScreen = document.getElementById('login-screen');
+        const mainApp = document.getElementById('main-app');
+        const loginForm = document.getElementById('login-form');
+        const pedidosList = document.getElementById('pedidos-list');
+        const logoutButton = document.getElementById('logout-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const messageBox = document.getElementById('message-box');
+
+        let repartidorId = null;
+
+        // Función para mostrar mensajes de notificación
+        function showMessage(message, type = 'success') {
+            messageBox.textContent = message;
+            messageBox.className = `message-box ${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.opacity = 1;
+            }, 10);
+            setTimeout(() => {
+                messageBox.style.opacity = 0;
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 500);
+            }, 3000);
+        }
+
+        // Función para renderizar los pedidos en la interfaz
+        function renderPedidos(pedidos) {
+            pedidosList.innerHTML = '';
+            if (pedidos.length === 0) {
+                pedidosList.innerHTML = '<p class="text-center text-gray-500">No tienes pedidos pendientes.</p>';
+                return;
+            }
+
+            pedidos.forEach(pedido => {
+                const pedidoCard = document.createElement('div');
+                pedidoCard.className = 'bg-white shadow rounded-xl p-4 flex flex-col space-y-3';
+                pedidoCard.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-box text-blue-500 text-xl"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Pedido #${pedido.id}</h3>
+                    </div>
+                    <p class="text-gray-600">${pedido.descripcion}</p>
+                    <div class="flex items-center text-gray-500 text-sm">
+                        <i class="fa-solid fa-location-dot mr-2"></i>
+                        <span>${pedido.direccion}</span>
+                    </div>
+                    <button class="mark-as-delivered-button w-full bg-green-500 text-white font-bold py-2 px-4 rounded-xl hover:bg-green-600 transition duration-200" data-id="${pedido.id}">
+                        Marcar como Entregado
+                    </button>
+                `;
+                pedidosList.appendChild(pedidoCard);
+            });
+
+            // Añadir event listeners a los nuevos botones
+            document.querySelectorAll('.mark-as-delivered-button').forEach(button => {
+                button.addEventListener('click', marcarComoEntregado);
+            });
+        }
+
+        // Función para cargar los pedidos desde la API
+        async function loadPedidos() {
+            if (!repartidorId) return;
+
+            loadingIndicator.classList.remove('hidden');
+            pedidosList.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}?action=get_pedidos&id_repartidor=${repartidorId}`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    renderPedidos(result.data);
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al conectar con el servidor.', 'error');
+                console.error('Error:', error);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // Función para marcar un pedido como entregado
+        async function marcarComoEntregado(event) {
+            const id_pedido = event.target.dataset.id;
+            const formData = new FormData();
+            formData.append('action', 'marcar_entregado');
+            formData.append('id_pedido', id_pedido);
+
+            event.target.textContent = 'Entregando...';
+            event.target.disabled = true;
+            event.target.classList.remove('bg-green-500');
+            event.target.classList.add('bg-gray-400');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showMessage(result.message);
+                    loadPedidos(); // Recargamos la lista
+                } else {
+                    showMessage(result.message, 'error');
+                    event.target.textContent = 'Marcar como Entregado';
+                    event.target.disabled = false;
+                    event.target.classList.remove('bg-gray-400');
+                    event.target.classList.add('bg-green-500');
+                }
+            } catch (error) {
+                showMessage('Error de red. Intenta de nuevo.', 'error');
+                console.error('Error:', error);
+                event.target.textContent = 'Marcar como Entregado';
+                event.target.disabled = false;
+                event.target.classList.remove('bg-gray-400');
+                event.target.classList.add('bg-green-500');
+            }
+        }
+
+        // Manejar el formulario de login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombreUsuario = document.getElementById('nombre_usuario').value;
+            const password = document.getElementById('password').value;
+
+            const formData = new FormData();
+            formData.append('action', 'login');
+            formData.append('nombre_usuario', nombreUsuario);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showMessage(result.message);
+                    repartidorId = result.user_id;
+                    localStorage.setItem('repartidorId', repartidorId);
+                    loginScreen.classList.add('hidden');
+                    mainApp.classList.remove('hidden');
+                    loadPedidos();
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al conectar con el servidor.', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Manejar el botón de logout
+        logoutButton.addEventListener('click', () => {
+            repartidorId = null;
+            localStorage.removeItem('repartidorId');
+            mainApp.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            loginForm.reset();
+            pedidosList.innerHTML = '';
+        });
+
+        // Verificar si ya hay una sesión activa
+        window.addEventListener('load', () => {
+            const storedId = localStorage.getItem('repartidorId');
+            if (storedId) {
+                repartidorId = storedId;
+                loginScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                loadPedidos();
+            }
+        });
+    </script>
+</body>
+</html>

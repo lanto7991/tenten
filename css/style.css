@@ -1,0 +1,236 @@
+/*
+ * Archivo: style.css
+ * Estilos minimalistas con colores neón para todas las páginas PHP.
+ *
+ * Paleta de colores:
+ * --bg-dark: Fondo oscuro para un contraste máximo.
+ * --text-light: Color de texto principal.
+ * --accent-neon-cyan: Cian neón para botones y acentos.
+ * --accent-neon-magenta: Magenta neón para estados y acentos secundarios.
+ * --success-neon: Verde neón para mensajes de éxito.
+ * --error-neon: Rojo neón para mensajes de error.
+ * --border-color: Color de borde y separadores.
+ */
+:root {
+    --bg-dark: #0A0A0A;
+    --text-light: #E0E0E0;
+    --accent-neon-cyan: #22D1EE;
+    --accent-neon-magenta: #E74CFF;
+    --success-neon: #39FF14;
+    --error-neon: #FF4F4F;
+    --border-color: #333;
+}
+
+/* --- General & Layout --- */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-size: 16px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 2rem;
+    background-color: #1A1A1A;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+h1, h2, h3 {
+    text-align: center;
+    color: var(--accent-neon-cyan);
+    text-shadow: 0 0 5px rgba(34, 209, 238, 0.7);
+    margin-bottom: 1.5rem;
+}
+
+p {
+    line-height: 1.6;
+    color: var(--text-light);
+    text-align: center;
+}
+
+a {
+    color: var(--accent-neon-cyan);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--accent-neon-magenta);
+}
+
+/* --- Formulario --- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    background-color: #222;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+label {
+    font-weight: bold;
+    color: var(--text-light);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    background-color: #333;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-light);
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent-neon-cyan);
+    box-shadow: 0 0 5px var(--accent-neon-cyan);
+}
+
+/* --- Botones --- */
+.button, button[type="submit"], .button-action, .button-danger {
+    display: inline-block;
+    padding: 12px 24px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.button, button[type="submit"], .button-action {
+    background: transparent;
+    color: var(--accent-neon-cyan);
+    border: 2px solid var(--accent-neon-cyan);
+}
+
+.button:hover, button[type="submit"]:hover, .button-action:hover {
+    background: var(--accent-neon-cyan);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--accent-neon-cyan);
+}
+
+.button-danger {
+    background: transparent;
+    color: var(--error-neon);
+    border: 2px solid var(--error-neon);
+}
+
+.button-danger:hover {
+    background: var(--error-neon);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--error-neon);
+}
+
+/* --- Mensajes --- */
+.message {
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.message.success {
+    color: var(--success-neon);
+    border: 1px solid var(--success-neon);
+    background-color: rgba(57, 255, 20, 0.1);
+}
+
+.message.error {
+    color: var(--error-neon);
+    border: 1px solid var(--error-neon);
+    background-color: rgba(255, 79, 79, 0.1);
+}
+
+/* --- Tablas --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table thead th {
+    background-color: #222;
+    color: var(--accent-neon-magenta);
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid var(--accent-neon-magenta);
+}
+
+table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+table tbody tr:hover {
+    background-color: #1F1F1F;
+}
+
+table tbody td:last-child {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.nav-links {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.nav-links a {
+    margin: 0 1rem;
+    font-size: 1.1rem;
+}
+
+/* Estilos específicos para la etiqueta de impresión */
+.etiqueta {
+    width: 80mm;
+    min-height: 100mm;
+    border: 2px solid var(--text-light);
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+}
+.etiqueta .header { border-bottom: 1px solid var(--border-color); }
+.etiqueta .section h2 { color: var(--accent-neon-cyan); border-bottom: 1px solid var(--border-color); }
+
+/* Estilos de la foto de perfil */
+.profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-neon-cyan);
+    margin-bottom: 1rem;
+    box-shadow: 0 0 10px rgba(34, 209, 238, 0.7);
+}
